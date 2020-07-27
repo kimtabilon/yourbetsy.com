@@ -1,0 +1,29 @@
+
+<?php
+$product 	  = $block->getProduct();
+$sku 		  = $product->getData('sku');
+$manufacturer = $product->getData('manufacturer');
+$description  = $product->getData('description');
+$sku = urlencode($sku);
+$manufacturer = urlencode($manufacturer);
+echo "<span>" . $description . "<span>";
+
+$gallery = @file_get_contents('https://www.console.yourbetsy.com/content/gallery/'.$sku);
+
+echo '<span class="item-img" style="display:none;">'.$gallery.'</span>';
+
+?>
+
+<script> 
+	
+	require(['jquery', 'jquery/ui'], function($){
+	  $(document).ready( function() {
+
+		var img = $('.item-img').html();  
+		if(img != '') {
+			$(img).insertAfter(".product-labels");
+			$('.item-gallery').html(img);
+		}
+	  });
+	});
+</script>

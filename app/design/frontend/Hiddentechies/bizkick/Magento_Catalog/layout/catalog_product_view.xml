@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<page layout="1column" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="mage/gallery/gallery.css"/>
+    </head>
+    <body>
+        <referenceBlock name="product.attributes">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Magento_Catalog::product/view/attributes.phtml</argument>
+            </action>
+        </referenceBlock>
+
+        <referenceContainer name="content">
+            <container name="product.info.media" htmlTag="div" htmlClass="product media" after="product.info.main">
+                <block class="Magento\Framework\View\Element\Template" name="product.info.media.image"
+                       template="product/view/catalog_product_view_image.phtml">
+                </block>
+            </container>
+        </referenceContainer>
+
+        <move element="page.main.title" destination="product.info.main" before="-"/>
+        <move element="product.info.stock.sku" destination="product.info.price" after="product.price.final"/>
+        <move element="product.info.review" destination="product.info.main" before="product.info.price"/>
+        <move element="product_view_custom_block_manufacturer" destination="product.info.main" after="page.main.title"/>
+        <referenceBlock name="product.info.sku" remove="true" />
+        <referenceBlock name="reviews.tab" remove="true"></referenceBlock>
+        <referenceBlock name="product.review.form" remove="true"></referenceBlock>
+        <referenceBlock name="product.info.review" remove="true"></referenceBlock>
+        <referenceBlock name="product.info.social" remove="true"></referenceBlock>
+
+        <referenceContainer name="csmanufacturer">
+            <block class="Magento\Catalog\Block\Product\View" name="product_view_custom_block_manufacturer" before="-" template="Magento_Catalog::product/view/information_tab.phtml"/>
+        </referenceContainer>
+ <!--         <referenceBlock name="product.info.details">
+            <block class="Magento\Catalog\Block\Product\View" name="information.tab" as="information" template="product/view/information_tab.phtml" group="detailed_info" >
+                <arguments>
+                    <argument translate="true" name="title" xsi:type="string">Information</argument>
+                    <argument name="sort_order" xsi:type="string">2</argument>
+                </arguments>
+            </block>
+        </referenceBlock> -->
+        <referenceBlock name="product.info.overview">
+            <arguments>
+                <argument name="at_label" translate="true" xsi:type="string">Overview</argument>
+            </arguments>
+        </referenceBlock>
+        <referenceContainer name="product.info.media">
+            <block class="Magento\Catalog\Block\Product\View" name="product.labels" template="Magento_Catalog::product/view/productlabels.phtml" before="product.info.main" />
+        </referenceContainer>
+
+        <move element="product.info.details" destination="columns" />
+    </body>
+</page>

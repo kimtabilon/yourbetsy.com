@@ -1,0 +1,62 @@
+<?php
+
+$product = $block->getProduct();
+$sku= $product->getData('sku');
+$manufacturer = $product->getData('manufacturer');
+$sku = urlencode($sku);
+$manufacturer = urlencode($manufacturer);
+
+
+$information = @file_get_contents('https://www.console.yourbetsy.com/content/manufacturer-profile/'.$manufacturer);
+/*$information = @file_get_contents('http://dm.ecommercebusinessprime.com/content/information/'.$sku.'/'.$manufacturer);*/
+
+if($information) {
+	echo "
+<!-- Trigger/Open The Modal -->
+<button id='myBtnmanufacturer' class='buttonmanufacturer'>Seller Name: ".$manufacturer."</button>
+
+<!-- The Modal -->
+<div id='myModalmanufacturer' class='modalmanufacturer'>
+
+  <!-- Modal content -->
+  <div class='modal-content-manufacturer'>
+    <span class='closemanufacturer'>&times;</span>
+    <h2>Seller Information</h2><br>
+    <div>".$information."</div>
+  </div>
+
+</div>";
+} else {
+	/*echo 'No Content';*/
+}
+
+?>
+
+<script>
+// Get the modal
+var modal = document.getElementById("myModalmanufacturer");
+
+// Get the button that opens the modal
+var btn = document.getElementById("myBtnmanufacturer");
+
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("closemanufacturer")[0];
+
+// When the user clicks the button, open the modal 
+btn.onclick = function() {
+  modal.style.display = "block";
+}
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+</script>
+

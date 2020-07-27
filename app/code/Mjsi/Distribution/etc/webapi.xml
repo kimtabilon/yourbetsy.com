@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+	
+	<route method="GET" url="/V1/mjsi-distribution/post/:param">
+		<service class="Mjsi\Distribution\Api\PostManagementInterface" method="getPost"/>
+		<resources>
+			<resource ref="anonymous"/>
+		</resources>
+	</route>
+    <route url="/V1/orderAddresses" method="GET">
+        <service class="Magento\Sales\Api\OrderAddressRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Magento_Sales::sales" />
+        </resources>
+    </route>
+</routes>

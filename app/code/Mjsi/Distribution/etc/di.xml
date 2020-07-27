@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Mjsi_Distribution extension
+ * NOTICE OF LICENSE
+ * 
+ * This source file is subject to the MIT License
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/mit-license.php
+ * 
+ * @category  Mjsi
+ * @package   Mjsi_Distribution
+ * @copyright Copyright (c) 2019
+ * @license   http://opensource.org/licenses/mit-license.php MIT License
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <preference for="Mjsi\Distribution\Api\PostManagementInterface" type="Mjsi\Distribution\Model\PostManagement"/>
+    <type name="Magento\Framework\Console\CommandList">
+       <arguments>
+           <argument name="commands" xsi:type="array">
+               <item name="distributionImport" xsi:type="object">Mjsi\Distribution\Console\Import</item>
+               <item name="distributionSync" xsi:type="object">Mjsi\Distribution\Console\Sync</item>
+               <item name="distributionUpdate" xsi:type="object">Mjsi\Distribution\Console\Update</item>
+               <item name="distributionGenerate" xsi:type="object">Mjsi\Distribution\Console\Generate</item>
+           </argument>
+       </arguments>
+   </type>
+</config>

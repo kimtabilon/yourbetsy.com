@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="header" remove="true" />
+        <referenceBlock name="register-link" remove="true" />
+        <!-- move sign-in link  next to  minicart block -->
+        <move element="authorization-link-login" destination="header-wrapper" after="minicart"/>
+        <move element="how-it-works" destination="header-wrapper" after="minicart"/>
+        <move element="vendor-shopper" destination="header-wrapper" after="minicart"/>
+        <referenceContainer name="header.panel">
+            <block class="Magento\Cms\Block\Block" name="how-it-works">
+                <arguments>
+                    <argument name="block_id" xsi:type="string">how-it-works</argument>
+                </arguments>
+            </block>
+            <block class="Magento\Cms\Block\Block" name="vendor-shopper">
+                <arguments>
+                    <argument name="block_id" xsi:type="string">vendor-shopper</argument>
+                </arguments>
+            </block>
+            <block class="Magento\Framework\View\Element\Html\Links" name="header.links">
+                
+                <arguments>
+                    <argument name="css_class" xsi:type="string">header links</argument>
+                </arguments>
+
+            </block>
+        </referenceContainer>
+        <referenceBlock name="logo">
+            <arguments>
+                <argument name="logo_img_width" xsi:type="number">148</argument>
+                <argument name="logo_img_height" xsi:type="number">43</argument>
+            </arguments>
+        </referenceBlock>
+        <referenceContainer name="footer">
+            <block class="Magento\Store\Block\Switcher" name="store_switcher" as="store_switcher" after="footer_links" template="Magento_Store::switch/stores.phtml"/>
+        </referenceContainer>
+        <referenceBlock name="report.bugs" remove="true"/>
+        <move element="copyright" destination="before.body.end"/>
+    </body>
+</page>
