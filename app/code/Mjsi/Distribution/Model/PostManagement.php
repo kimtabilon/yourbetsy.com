@@ -47,6 +47,7 @@ class PostManagement {
                     $response       = [];
                     $attribute_id   = $readConnection->fetchOne("SELECT attribute_id FROM eav_attribute WHERE `attribute_code` = 'price' limit 1");
                     $prices         = $readConnection->fetchAll("SELECT entity_id, value FROM catalog_product_entity_decimal WHERE attribute_id = {$attribute_id}");
+                    $manufacturers 	= $readConnection->fetchAll("SELECT entity_id, value FROM catalog_product_entity_varchar WHERE attribute_id = 139");
                     $quantities     = $readConnection->fetchAll("SELECT product_id, qty FROM cataloginventory_stock_item");
                     $products       = $readConnection->fetchAll("SELECT entity_id, sku FROM catalog_product_entity");
                     
@@ -57,6 +58,7 @@ class PostManagement {
                             'price'         => 0,
                             'qty'           => 0,
                             'entity_id'     => $product['entity_id'],
+                            'manufacturer'  => '',
                         ];
                     }
 
@@ -69,6 +71,7 @@ class PostManagement {
                                 'price'     => floatval($price['value']),
                                 'qty'       => 0,
                                 'entity_id' => $items[$key]['entity_id'],
+                                'manufacturer'  => '',
                             ];
                         }
                     }
@@ -84,6 +87,25 @@ class PostManagement {
                                 'price'     => $price,
                                 'qty'       => floatval($qty['qty']),
                                 'entity_id' => $items[$key]['entity_id'],
+                                'manufacturer'  => '',
+                            ];
+                        }
+                    }
+
+                    foreach ($manufacturers as $manu) {
+                        $key = $manu['entity_id'];
+
+                        if (array_key_exists($key, $items)) {
+                            $price = $items[$key]['price'];
+                            $qty = $items[$key]['qty'];
+                            if(!isset($items[$key]['price'])) { $price = 0; }
+                            if(!isset($items[$key]['qty'])) { $qty = 0; }
+                            $items[$key] = [
+                                'sku'       => $items[$key]['sku'],
+                                'price'     => $price,
+                                'qty'       => $qty,
+                                'entity_id' => $items[$key]['entity_id'],
+                                'manufacturer' => $manu['value'],
                             ];
                         }
                     }
@@ -117,55 +139,54 @@ class PostManagement {
                     return (int)$count;
                     break;  
 
-                case 'test_custom':
-                    /* $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); */
-                    
-                    
-                    /* $data = $readConnection->fetchAll("SELECT name FROM sales_order_item WHERE sku = {$params[1]}" ); */
-                    /* $data = $readConnection->fetchAll("SELECT sales_order_item.name, sales_order.entity_id FROM sales_order 
-                        JOIN sales_order_item ON sales_order.entity_id=sales_order_item.order_id
-                        WHERE sales_order_item.sku = {$params[1]}" 
-                    ); */
-                    /* $test = "TEST"; */
-                    $orderDetail = $objectManager->create('Magento\Sales\Model\Order')->load(33);
-                    $order_status = $orderDetail->getStatus();
-                    $test = $order_status;
-                    /* $orderItems = $orderDetail->getAllItems();
-                    foreach ($orderItems as $value) {
-                        if($value['product_id']==38)
-                        {    
-                            // $test = $value['name'];
-                            $value->setQtyCanceled($value['qty_ordered']);
-                            $value->save();
-                            $test = $value['name'];
-                        }
-                        else
-                        {   
-                            continue;
-                        }
-                    } */
-                    /* if ($order_status != "complete") {
-                        # code...
-                    } */
-                    /* if ($orderDetail->canCancel()) {
-                        $orderItems = $orderDetail->getAllItems();
-                        foreach ($orderItems as $value) {
-                            if($value['product_id']==39)
-                            {    
-                                $test = $value['name'];
-                                // $value->setQtyCanceled(1.0000);
-                                // $value->save();
-                                
+                case 'tableratesku-import':
+
+                    $connection = $resource->getConnection();
+                    $handle = fopen('https://console.yourbetsy.com/storage/tablerate/forimport/import.csv', 'r');
+                    $items = [];
+                    while (! feof($handle)) { 
+                        $item = fgetcsv($handle); 
+                        $country = $item[0];
+                        $region = $item[1];
+                        $from_DB = $readConnection->fetchAll("SELECT region_id FROM directory_country_region WHERE `country_id` = '{$country}' AND `code` = '{$region}'");
+                        foreach ($from_DB as $key => $value) {
+                            $check_exist = $readConnection->fetchOne("SELECT pk FROM shipping_tablerate_persku 
+                                                                    WHERE `website_id` = 1 
+                                                                    AND `dest_country_id` = '{$country}'
+                                                                    AND `dest_region_id` = '{$value['region_id']}'
+                                                                    AND `dest_zip` = '{$item[2]}'
+                                                                    AND `sku` = '{$item[3]}'
+                                                                    limit 1
+                                                                    ");
+                            $tableratesku_pk = '';
+                            if ($check_exist) {
+                                $tableratesku_pk = $check_exist;
                             }
-                            else
-                            {   
-                             continue;
-                            }
+                            $items[] = [
+                                $country, $value['region_id'], $item[2], $item[3], $item[4], $tableratesku_pk
+                            ];
                         }
-                        // $orderDetail->save();
-                    } */
+                    }
+
+                    fclose($handle);
+
+                    foreach ($items as $val) {
+                        if ($val['5'] != '') {
+                            $connection->query("UPDATE shipping_tablerate_persku SET `price` = '{$val['4']}' WHERE `pk` = '{$val['5']}'");
+                        }else {
+                            $connection->query("INSERT INTO `shipping_tablerate_persku`(`website_id`, `dest_country_id`, `dest_region_id`, `dest_zip`, `price`, `sku`) 
+                                                VALUES (1, '$val[0]', '$val[1]', '$val[2]', '$val[4]', '$val[3]')
+                                            ");
+                        }
+                    }
+
+                    /* $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/mylog.log');
+                    $logger = new \Zend\Log\Logger();
+                    $logger->addWriter($writer);
+                    $logger->info($items); */
                     
-                    return json_encode($test);
+
+                    return 'done';
                     break;
                     
                 default:
