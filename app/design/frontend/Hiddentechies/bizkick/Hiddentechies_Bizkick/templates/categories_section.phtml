@@ -1,0 +1,21 @@
+
+<section id="custom-categories">
+    <div class="custom-container">
+        <ul>
+            <?php $cat = [
+                'Arts & Crafts', 'Furniture & Decor', 'Clothing & Accesories', 'Bags'
+                'Shoes', 'Little Treasures', 'Travel', 'Make-up And Skin Care'
+            ]?>
+            <?php $count = 0 ?>
+            <?php foreach ($cat as $key => $value) :?>
+                <?php $count++; ?>
+                <li>
+                    <a href="#">
+                        <img src="<?php media url="wysiwyg/categories/cat_0".$count.".png" ?>" alt="">
+                        <span><?php echo $value ?></span>
+                    </a>
+                </li>
+            <?php endforeach ?>
+        </ul>
+    </div>
+</section>

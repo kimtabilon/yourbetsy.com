@@ -1,0 +1,73 @@
+<?php
+$_categories = $this->helper('Magento\Catalog\Helper\Category')->getStoreCategories();
+$helper = $this->helper('Magento\Catalog\Helper\Category');
+?>
+    
+<div class="_category-list-container">
+    <span class="_category-container-title"><i class="fa fa-chevron-down" aria-hidden="true"></i>Categories</span>
+    <ul class="_category-list">
+        <?php foreach ($_categories as $cat) :?>
+        <li class="has-child" id="cat_<?php echo $cat->getId() ?>">
+            <a href="<?php echo $helper->getCategoryUrl($cat)?>"><?php echo $cat->getName() ?></a>
+        
+            <?php $subcategories = $cat->getChildren() ?>
+            <?php if (count($subcategories) > 0): ?>
+            <ul class="_sub-category" id="cat_<?php echo $cat->getId() ?>_list">
+                <?php foreach ($subcategories as $sub1) :?>
+                <li>
+                    <a href="<?php echo $helper->getCategoryUrl($sub1)?>"><?php echo $sub1->getName() ?> </a>
+                </li>
+
+                <?php $subcat1 = $sub1->getChildren() ?>
+                <?php if (count($subcat1) > 0): ?>
+                    <ul>
+                        <?php foreach ($subcat1 as $sub2) :?>
+                        <li>
+                            <a href="<?php echo $helper->getCategoryUrl($sub2)?>"><?php echo $sub2->getName() ?></a>
+                        </li>
+                        <?php $subcat2 = $sub2->getChildren() ?>
+                        <?php if (count($subcat2) > 0): ?>
+                            <ul>
+                                <?php foreach ($subcat2 as $sub3) :?>
+                                <li>
+                                    <a href="<?php echo $helper->getCategoryUrl($sub3)?>"><?php echo $sub3->getName() ?></a>
+                                </li>
+                                <?php endforeach ?>
+                            </ul>
+                        <?php endif; ?>
+                        <?php endforeach ?>
+                    </ul>
+                <?php endif; ?>
+                
+                <?php endforeach ?>
+            </ul>
+            <?php endif; ?>
+        </li>
+        
+        <?php endforeach ?>
+    </ul>
+</div>
+
+<script>
+require([
+        'jquery'
+],
+function ($) {
+        $('._category-container-title').on('click', function () {
+        $('._category-list').slideToggle();
+    });
+
+    $('.has-child').on('mouseenter', function () {
+        var id = $(this).attr('id');
+        $('#'+id+'_list').toggle();
+        console.log(id);
+    });
+
+    $('.has-child').on('mouseleave', function () {
+        var id = $(this).attr('id');
+        var visible = $('#'+id+'_list').css('display');
+        $('#'+id+'_list').toggle();
+    });
+    });
+    
+</script>

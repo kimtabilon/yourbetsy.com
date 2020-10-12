@@ -7,6 +7,7 @@
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
+        <css src="Hiddentechies_Bizkick::css/fonts.css" /> 
         <css src="Hiddentechies_Bizkick::css/owl.carousel.css"/>
         <css src="Hiddentechies_Bizkick::css/owl.theme.css"/>
         <css src="Hiddentechies_Bizkick::css/owl.transitions.css"/>
@@ -41,5 +42,17 @@
             <block class="Magento\Framework\View\Element\Template" as="blzkick.below" name="blzkick.below" template="Hiddentechies_Bizkick::bizkickbelow.phtml" after="main.content" />
         </referenceContainer>
         <referenceBlock name="wish-list-link" remove="true"/>
+
+        <!-- <move element="navigation.sections" destination="page.wrapper" after="blzkick.above"/> -->
+        <referenceBlock name="navigation.sections" remove="true" />
+        <referenceContainer name="category.dropdown.container">
+            <block class="Magento\Framework\View\Element\Template" name="category.dropdown" template="Hiddentechies_Bizkick::category.phtml" before="-"/>
+        </referenceContainer>
+        <move element="category.dropdown" destination="header-wrapper"/>
+        <referenceContainer name="login.button.container">
+            <block class="Magento\Framework\View\Element\Template" name="login.button" template="Hiddentechies_Bizkick::login_button.phtml" before="-"/>
+        </referenceContainer>
+        <move element="login.button" destination="header-wrapper"/>
     </body>
+    
 </page>
