@@ -1,0 +1,244 @@
+<?php
+use Magento\Framework\View\Element\Template;
+/** @var Template $block */
+
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+
+$productCollection = $objectManager->create('Magento\Catalog\Model\ResourceModel\Product\CollectionFactory');
+// $productCollection = $objectManager->create('Magento\Catalog\Model\ProductFactory');
+
+$manufacturer = $block->getData('sellerName');
+$manufacturer_urldecode = urldecode($manufacturer);
+$collection = $productCollection->create()
+            ->addAttributeToSelect('*')
+            ->addFieldToFilter('manufacturer', $manufacturer_urldecode)
+            ->load();
+
+$manufacturer_urlencode = urlencode($manufacturer);
+
+$seller_url = urlencode($block->getUrl('sellerpage/page/view/sellername/').$manufacturer);
+
+$seller_info = @file_get_contents('https://www.console.yourbetsy.com/content/manufacturer-profile/'.$manufacturer);
+$seller_info = json_decode($seller_info);
+
+$sellername = '';
+$seller_address = '';
+$seller_profile = '';
+$seller_banner = '';
+$about_us = '';
+$shipping_policy = '';
+$payment_info = '';
+$return_policy = '';
+$social_media_url = '';
+
+if ($seller_info) {
+    $sellername = $seller_info->reseller_name;
+    $seller_address = $seller_info->address;
+    $seller_profile = $seller_info->profile_img;
+    $seller_banner = $seller_info->banner_img;
+    $about_us = $seller_info->about_us;
+    $shipping_policy = $seller_info->shipping_policy;
+    $payment_info = $seller_info->payment_information;
+    $return_policy = $seller_info->return_policy;
+    $social_media_url = $seller_info->socail_media_url;
+}
+?>
+
+<section id="seller_page">
+    <div class="custom-banner-container">
+        <div class="custom-profile-container" style="background-image: linear-gradient(  rgb(0 0 0 / 0.1), rgba(0, 0, 0, 0.1)), url(<?php echo $seller_banner?>)">
+            <div class="custom-profile-info">
+                <div class="img-container">
+                    <img src="<?php echo $seller_profile?>" alt="">
+                </div>
+                <div class="details">
+                    <h3><?php echo $sellername?></h3>
+                    <p><?php echo $seller_address?></p>
+                </div>
+                
+            </div>
+            <div class="custom-profile-buttons">
+                <a target="_blank" href="<?php echo $social_media_url ?>" class="custom-button-container">
+                    <div class="custom-button">
+                        <span>Follow</span>
+                    </div>
+                </a>
+                <a href="#" class="custom-button-container" id="open_modal_share">
+                    <div class="custom-button">
+                        <span>Share</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="custom-content">
+        <div class="custom-tab-menu">
+            <ul id="menu_list">
+                <li id="menu_1">STORE</li>
+                <li id="menu_3">ABOUT US</li>
+                <li id="menu_4">POLICIES</li>
+            </ul>
+        </div>
+        <div class="custom-tab-content">
+            <div class="custom-tab-item" id="menu_1_details">
+                <div class="custom-product-list">
+                    <!-- <div class="custom-sellerpage-heading">
+                        <h3>Products</h3>
+                    </div> -->
+                    <div class="custom-product-list-container">
+                    <?php foreach ($collection as $product) : ?>
+                        <?php 
+                            $info = @file_get_contents('https://www.console.yourbetsy.com/content/details/'.urlencode($product->getSku()));
+                            if($info) {
+                                $info = json_decode($info, 1);
+                                $img = '';
+                                if (isset($info['images'][0])) {
+                                    $img = $info['images'][0];
+                                }
+                            }
+
+                            $reviewCollectionFactory = $objectManager->create('Magento\Review\Model\ResourceModel\Review\CollectionFactory')->create();
+                            $storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
+                            $currentStoreId = $storeManager->getStore()->getId();
+                            // Get reviews collection
+                            $reviewsCollection = $reviewCollectionFactory->addFieldToSelect('*')
+                                    ->addStoreFilter($currentStoreId)
+                                    ->addStatusFilter(\Magento\Review\Model\Review::STATUS_APPROVED)
+                                    ->addFieldToFilter('entity_pk_value', $product->getId())
+                                    ->setDateOrder()
+                                    ->addRateVotes();
+
+                            $ratingper_product = 0;
+                            $fivestar_rating = 0;
+                            $ratingper_productcount = 0;
+                            if ($reviewsCollection && count($reviewsCollection) > 0) {
+                                foreach ($reviewsCollection AS $review) {
+                                    $countRatings = count($review->getRatingVotes());
+                                    if ($countRatings > 0) {
+                                        $allRatings = 0;
+                                        $ratingper_productcount++;
+                                        foreach ($review->getRatingVotes() as $vote) {
+                                            $allRatings = $allRatings + $vote->getPercent();
+                                        }
+                                        $allRatingsAvg = $allRatings / $countRatings;
+                                        $ratingper_product = $ratingper_product + $allRatingsAvg;
+                                        
+                                    }
+                                }
+                            }
+                            
+                            if ($ratingper_product > 0) {
+                                $ratingper_product = $ratingper_product / $ratingper_productcount;
+                                $ratingper_product = round($ratingper_product);
+
+                                $fivestar_rating = $ratingper_product / 2;
+                                $fivestar_rating = substr($fivestar_rating,0,1);
+                                $fivestar_rating = number_format($fivestar_rating,1);
+                            }
+                            
+                        ?>
+                        <div class="custom-product-item custom-product-list-item">
+                            <div class="img-container">
+                                <img src="<?php echo $img ?>" alt="<?php echo $product->getName()?>">
+                            </div>
+                            
+                            <a href="<?php echo $product->getProductUrl()?>">
+                                <h3><?php echo $product->getName()?></h3>
+                            </a>
+                            <p><span>₱</span><?php echo number_format($product->getFinalPrice(), 2); ?></p>
+                            <div class="review-ratings">
+                                <div class="rating-summary">
+                                    <div class="rating-result" title="<?php echo $fivestar_rating; ?>">
+                                        <meta itemprop="worstRating" content = "1"/>
+                                        <meta itemprop="bestRating" content = "100"/>
+                                        <span style="width:<?php echo $ratingper_product; ?>%">
+                                            <span itemprop="ratingValue"><?php echo $ratingper_product; ?>%</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach ?>
+                    </div>
+                </div>
+            </div>
+            <div class="custom-tab-item" id="menu_3_details">
+                <div class="seller-details">
+                    <p><?php echo $about_us ?></p>
+                </div>
+                
+            </div>
+            <div class="custom-tab-item" id="menu_4_details">
+                <div class="seller-details">
+                    <div class="multiple-details">
+                        <h3>Shipping Policy</h3>
+                        <p><?php echo $shipping_policy ?></p>
+                    </div>
+                    <div class="multiple-details">
+                        <h3>Payment Information</h3>
+                        <p><?php echo $payment_info ?></p>
+                    </div>
+                    <div class="multiple-details">
+                        <h3>Return Policy</h3>
+                        <p><?php echo $return_policy ?></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="modal_share" class="custom-modal">
+  <!-- Modal content -->
+  <div class="custom-modal-container-sm">
+    <span class="custom-modal-close" id="close_modal_share">&times;</span>
+    <h2>Share Product</h2><br>
+    <div class="custom-modal-body">
+        <div class="custom-social-media-icons">
+            <!-- Facebook -->
+            <a href="https://www.facebook.com/sharer/sharer.php?u=<?php echo $seller_url ?>" onclick='javascript:window.open(this.href,"","width=640,height=480,left=0,top=0,location=no,status=yes,scrollbars=yes,resizable=yes");return false' title="Share on facebook">
+                <i class="fa fa-facebook" aria-hidden="true"></i>
+            </a>
+            <!-- TWITTER -->
+            <a href="http://twitter.com/home/?status=<?php echo $seller_url ?>)" onclick='javascript:window.open(this.href,"","width=640,height=480,left=0,top=0,location=no,status=yes,scrollbars=yes,resizable=yes");return false' title="Share on Twitter">
+                <i class="fa fa-twitter" aria-hidden="true"></i>
+            </a>
+            <!-- Instagram -->
+            <a href="https://www.instagram.com/?url=<?php echo $seller_url ?>" onclick='javascript:window.open(this.href,"","width=640,height=480,left=0,top=0,location=no,status=yes,scrollbars=yes,resizable=yes");return false' title="Share on Instagram">
+                <i class="fa fa-instagram" aria-hidden="true"></i>
+            </a>
+            <!-- Google Plus -->
+            <a href="mailto:?body=<?php $seller_url ?>" title="Share on via email">
+                <i class="fa fa-envelope" aria-hidden="true"></i>
+            </a>
+        </div>
+    </div>
+    
+  </div>
+
+</div>
+
+<script>
+require([
+    'jquery',
+    'jquery/ui',
+],
+function ($) {
+    $("#menu_list li").first().addClass('active').show();
+    $('#menu_list li').on('click', function() {
+        var id = $(this).attr('id');
+        $('#menu_list').find('li').removeClass('active');
+        $(this).addClass('active');
+        $('.custom-tab-item').hide();
+        $('#'+id+'_details').fadeIn();
+    });
+
+    /* MODAL OPEN CLOSE */
+    $(document).on('click','#open_modal_share', function() {
+        $('#modal_share').show();
+    })
+    $(document).on('click','#close_modal_share', function() {
+        $('#modal_share').hide();
+    })
+});
+</script>

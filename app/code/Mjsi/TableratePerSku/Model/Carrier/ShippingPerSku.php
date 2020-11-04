@@ -133,6 +133,10 @@ class ShippingPerSku extends \Magento\Shipping\Model\Carrier\AbstractCarrier imp
         } */
         
         /* End */
+        $test = '';
+        if ($amount <= 0) {
+            return;
+        }
  
         $method->setPrice($amount);
         $method->setCost($amount);
